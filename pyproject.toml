@@ -9,8 +9,7 @@ description = "Skin segmentation using nnU-Net"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "nnunetv2>=2.8.1",
-    "torch>=2.1.2,!=2.9.*",
+    "torch==2.10.0",
     "numpy>=1.24",
     "pandas>=1.5",
     "scikit-learn>=1.3",

@@ -4,8 +4,7 @@ Version: 0.1.0
 Summary: Skin segmentation using nnU-Net
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
-Requires-Dist: nnunetv2>=2.8.1
-Requires-Dist: torch!=2.9.*,>=2.1.2
+Requires-Dist: torch==2.10.0
 Requires-Dist: numpy>=1.24
 Requires-Dist: pandas>=1.5
 Requires-Dist: scikit-learn>=1.3
