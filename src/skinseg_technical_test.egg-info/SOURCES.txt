@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+src/skinseg_technical_test/__init__.py
+src/skinseg_technical_test.egg-info/PKG-INFO
+src/skinseg_technical_test.egg-info/SOURCES.txt
+src/skinseg_technical_test.egg-info/dependency_links.txt
+src/skinseg_technical_test.egg-info/requires.txt
+src/skinseg_technical_test.egg-info/top_level.txt

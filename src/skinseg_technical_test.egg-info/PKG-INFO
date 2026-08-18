@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: skinseg-technical-test
+Version: 0.1.0
+Summary: Skin segmentation using nnU-Net
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: nnunetv2>=2.8.1
+Requires-Dist: torch!=2.9.*,>=2.1.2
+Requires-Dist: numpy>=1.24
+Requires-Dist: pandas>=1.5
+Requires-Dist: scikit-learn>=1.3
+Requires-Dist: scikit-image>=0.19.3
+Requires-Dist: SimpleITK>=2.2.1
+Requires-Dist: matplotlib>=3.7
+Requires-Dist: tqdm>=4.65
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+Requires-Dist: ruff>=0.1; extra == "dev"
