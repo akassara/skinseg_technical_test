@@ -617,11 +617,20 @@ class nnUNetTrainer(object):
             dataset = self.dataset_class(self.preprocessed_dataset_folder,
                                          identifiers=None,
                                          folder_with_segs_from_previous_stage=self.folder_with_segs_from_previous_stage)
-            # if the split file does not exist we need to create it
-            if not isfile(splits_file):
-                self.print_to_log_file("Creating new 5-fold cross-validation split...")
+            requested_num_splits = int(os.environ.get("NNUNET_NUM_SPLITS", "5"))
+            if requested_num_splits < 2:
+                raise ValueError("NNUNET_NUM_SPLITS must be at least 2")
+
+            # Create or replace the split file when an explicit fold count is requested.
+            splits = load_json(splits_file) if isfile(splits_file) else None
+            if splits is None or len(splits) != requested_num_splits:
+                self.print_to_log_file(
+                    f"Creating new {requested_num_splits}-fold cross-validation split..."
+                )
                 all_keys_sorted = list(np.sort(list(dataset.identifiers)))
-                splits = generate_crossval_split(all_keys_sorted, seed=12345, n_splits=5)
+                splits = generate_crossval_split(
+                    all_keys_sorted, seed=12345, n_splits=requested_num_splits
+                )
                 save_json(splits, splits_file)
 
             else:
