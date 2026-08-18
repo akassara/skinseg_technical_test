@@ -1,3 +1,4 @@
+import os
 import SimpleITK as sitk
 import numpy as np
 from skinseg_technical_test.nnunetv2.paths import nnUNet_raw, nnUNet_preprocessed, nnUNet_results
@@ -169,7 +170,7 @@ def get_train_test_split(df: pd.DataFrame, test_size: float = 0.25, n_folds: int
         print(f"Fold {fold_idx + 1}: {len(fold_dict['train'])} train, {len(fold_dict['val'])} val")
     return train_val_folds, test_ids, patient_metadata
 
-def get_patient_metadata(df: pd.DataFrame, masks_path: str = "/Users/amynkassara/Desktop/projects/skinseg_technical_test/data/masks"):
+def get_patient_metadata(df: pd.DataFrame, masks_path: str | None = None):
     """
     Extracts metadata for each patient from the DataFrame.
 
@@ -180,6 +181,15 @@ def get_patient_metadata(df: pd.DataFrame, masks_path: str = "/Users/amynkassara
     - A DataFrame containing metadata for each patient, region, and canonical region.
     """
     
+    if masks_path is None:
+        data_path = Path(
+            os.environ.get(
+                "SKINSEG_DATA_PATH",
+                Path(__file__).resolve().parents[4] / "data",
+            )
+        )
+        masks_path = data_path / "masks"
+
     # Replace NaN values in region column with 'Unknown'
     df = df.copy()
     df['region'] = df['region'].fillna('Unknown')

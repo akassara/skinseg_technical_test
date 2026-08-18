@@ -17,7 +17,12 @@ from skinseg_technical_test.nnunetv2.prepare.utils import (
 )
 
 
-data_path = Path("/Users/amynkassara/Desktop/projects/skinseg_technical_test/data")
+data_path = Path(
+    os.environ.get(
+        "SKINSEG_DATA_PATH",
+        Path(__file__).resolve().parents[4] / "data",
+    )
+)
 # ---------------------
 # Logging setup
 # ---------------------
@@ -124,7 +129,7 @@ def prepare_skinseg(dataset_id: int, task_name: str, test_size: float, n_folds: 
                 train_pids += 1
                 logging.info(f"Processed train image {img_name} for patient {patient_id}")    
     # dump json and csv
-    save_json(train_val, preprocessed_dir / "splits_final.json")
+    #save_json(train_val, preprocessed_dir / "splits_final.json")
     patient_metadata.to_csv(preprocessed_dir / "patient_metadata.csv", index=False)
     df[df['patient_id'].isin(test)].to_csv(preprocessed_dir / "test.csv", index=False)
     # Generate dataset JSON
