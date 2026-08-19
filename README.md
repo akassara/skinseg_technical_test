@@ -135,7 +135,9 @@ These results come from the four-fold `nnUNetTrainer_60epochs__nnUNetPlans__2d` 
 | 2 | 70.8% | 35.9% | 97.9% | 18.9% |
 | 3 | 74.7% | 40.6% | 97.7% | 37.3% |
 
-The model shows strong and stable JDE performance on the test set, while surface and corneous segmentation are substantially harder and show a clear validation-to-test gap. This suggests that the model learns the main layer geometry but remains sensitive to acquisition variability and thin or weakly contrasted boundaries.
+The model shows strong and stable JDE performance on the test set, while surface and corneous segmentation are substantially harder and show a clear validation-to-test gap. This suggests that the model learns the main layer geometry but remains sensitive to acquisition variability and thin or weakly contrasted boundaries. 
+
+Also, is there seems to be a problem with the chosen solution, the missing labels seems to have an impact on the training, which was supposed to be dealt with with the nnUNet "ignore" label. There is a bias towards producing incomplete masks.
 
 ### Qualitative predictions
 
@@ -157,7 +159,3 @@ data/                    Input data and masks
 assets/                  README figures and prediction examples
 nnunet_data/             Raw, preprocessed, and result directories
 ```
-
-## Conclusion
-
-The solution provides a reproducible nnU-Net workflow with persistent data paths, per-fold Dice reporting, and qualitative prediction dashboards. The current model is promising for JDE and background segmentation, but the lower and more variable surface and corneous test scores indicate that generalization remains the main challenge. More representative training data, stronger augmentation, and targeted review of surface and corneous annotations are the most useful next steps.
