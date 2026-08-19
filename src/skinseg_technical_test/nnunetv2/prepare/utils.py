@@ -106,10 +106,13 @@ def make_out_dirs(dataset_id: int, task_name: str):
     
     labelsTr_dir = out_dir / "labelsTr"
     labelsTr_dir.mkdir(exist_ok=True)
+
+    labelsTs_dir = out_dir / "labelsTs"
+    labelsTs_dir.mkdir(exist_ok=True)
     
     preprocessed_dir = nnUNet_preprocessed / dataset_name
     preprocessed_dir.mkdir(parents=True, exist_ok=True)
-    return out_dir, imagesTr_dir, labelsTr_dir, imagesTs_dir, preprocessed_dir
+    return out_dir, imagesTr_dir, labelsTr_dir, imagesTs_dir, labelsTs_dir, preprocessed_dir
 
 def get_train_test_split(df: pd.DataFrame, test_size: float = 0.25, n_folds: int = 3, random_state: int = 3103):
     """

@@ -70,7 +70,7 @@ def prepare_skinseg(dataset_id: int, task_name: str, test_size: float, n_folds: 
     - task_name: The name of the task.
     """
     # Setup logging
-    out_dir, imagesTr_dir, labelsTr_dir, imagesTs_dir, preprocessed_dir = make_out_dirs(dataset_id, task_name)
+    out_dir, imagesTr_dir, labelsTr_dir, imagesTs_dir, labelsTs_dir, preprocessed_dir = make_out_dirs(dataset_id, task_name)
     setup_logging(preprocessed_dir / "logs")
     logging.info(f"Starting dataset preparation for task '{task_name}' with dataset ID {dataset_id}.")
     df_labels = pd.read_csv(data_path / 'labels.csv')
@@ -103,13 +103,16 @@ def prepare_skinseg(dataset_id: int, task_name: str, test_size: float, n_folds: 
         label_path = data_path / 'masks' / f"{img_name.split('.png')[0]}.png"     
         if patient_id in test:
             img_dest = imagesTs_dir / f"{img_name.split('.png')[0]}_0000.nii.gz"
+            label_dest = labelsTs_dir / f"{img_name.split('.png')[0]}.nii.gz"
             if img_dest.exists() and not regenerate:
                 logging.info(f"Test image {img_dest} already exists. Skipping conversion.")
                 continue
             img_array = load_mask_as_array(img_path, type='img')
-            img_array, _ = crop_to_common_shape(img_array, np.zeros_like(img_array))
+            img_array, label_array = crop_to_common_shape(img_array, np.zeros_like(img_array))
+            label_array = load_mask_as_array(label_path, type='mask')
             # Convert to NIfTI and save in imagesTs directory
             im_to_niftii(img_array, img_dest)
+            im_to_niftii(label_array, label_dest, type='mask')
             test_pids += 1
             logging.info(f"Processed test image {img_name} for patient {patient_id}")   
         else:

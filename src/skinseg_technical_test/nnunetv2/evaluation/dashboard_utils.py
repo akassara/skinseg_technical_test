@@ -1,26 +1,96 @@
 from html import escape
+import base64
 import logging
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import SimpleITK as sitk
+
 LOGGER = logging.getLogger(__name__)
+COLORS = {0: "white", 1: "#ff4d6d", 2: "#35a7ff", 3: "#ffd166"}
+
+
+def _read_array(path):
+	return sitk.GetArrayFromImage(sitk.ReadImage(str(path))).squeeze()
+
+
+def _write_overlay(image_path, prediction_path, output_path):
+	image = _read_array(image_path)
+	prediction = _read_array(prediction_path)
+	fig, axis = plt.subplots(figsize=(6, 5), dpi=140)
+	axis_image = axis.imshow(image, cmap="gray")
+	axis_image.set_clim(float(np.nanmin(image)), float(np.nanmax(image)))
+	for label, color in COLORS.items():
+		if label == 0:
+			continue
+		predicted_mask = (prediction == label).astype(np.float32)
+		axis.contour(predicted_mask, colors=[color], linewidths=1.4)
+	axis.set_title("Predicted contours")
+	axis.axis("off")
+	fig.tight_layout(pad=0.5)
+	fig.savefig(output_path, bbox_inches="tight")
+	plt.close(fig)
+
+
+def _find_case_file(directory, case):
+	"""Find a test file whose nnU-Net case name starts with ``case``."""
+	for path in Path(directory).glob(f"{case}*.nii.gz"):
+		return path
+	return None
 
 
 def write_html_scorecard(scorecard, model_dir, output_path=None):
 	"""Write a styled, browser-readable HTML version of a scorecard."""
-	model_dir = Path(model_dir)
+	model_dir = Path(model_dir).resolve()
 	if output_path is None:
 		output_path = model_dir / "validation_scorecard.html"
+	output_path = Path(output_path).resolve()
 
 	metric_columns = [column for column in scorecard.columns if column.startswith("dice_")]
-	display_columns = ["fold", "case_id", *metric_columns]
+	display_columns = ["split", "fold", "case", *metric_columns]
 	display = scorecard[display_columns].copy()
+	overlay_paths = {}
+	overlay_sources = {
+		(split, fold, case): (Path(image_path), Path(prediction_path))
+		for split, fold, case, image_path, prediction_path in scorecard.attrs.get("overlay_sources", [])
+	}
+	dataset_name = next((part for part in model_dir.parts if part.startswith("Dataset")), None)
+	data_root = Path("/workspace/nnunet_data")
+	raw_root = Path(__import__("os").environ.get("nnUNet_raw", data_root / "nnunet_raw"))
+	for row in scorecard.itertuples():
+		if row.split != "test" or row.case == "FOLD_MACRO_AVERAGE":
+			continue
+		key = (row.split, row.fold, row.case)
+		if key in overlay_sources:
+			continue
+		fold_dir = model_dir / row.fold / "predictionsTs"
+		prediction_path = _find_case_file(fold_dir, row.case)
+		image_path = _find_case_file(raw_root / dataset_name / "imagesTs", row.case)
+		if prediction_path and image_path:
+			overlay_sources[key] = (image_path, prediction_path)
+		else:
+			LOGGER.warning("Cannot create test overlay for %s", row.case)
+	for (split, fold, case_id), (image_path, prediction_path) in overlay_sources.items():
+		overlay_dir = model_dir / "scorecard_overlays"
+		overlay_dir.mkdir(parents=True, exist_ok=True)
+		overlay_path = overlay_dir / f"{split}_{fold}_{case_id}.png"
+		if not overlay_path.exists():
+			_write_overlay(image_path, prediction_path, overlay_path)
+		overlay_paths[(split, fold, case_id)] = overlay_path
+	display["overlay"] = [
+		f'<img src="data:image/png;base64,{base64.b64encode(overlay_paths[(row.split, row.fold, row.case)].read_bytes()).decode("ascii")}" width="180" loading="lazy">'
+		if (row.split, row.fold, row.case) in overlay_paths else ""
+		for row in scorecard.itertuples()
+	]
 	for column in metric_columns:
-		display[column] = display[column].map(lambda value: f"{value:.1%}")
+		display[column] = display[column].map(lambda value: "N/A" if pd.isna(value) else f"{value:.1%}")
 
-	summary = display[display["case_id"] == "FOLD_MACRO_AVERAGE"]
-	summary_table = summary.to_html(index=False, classes="score-table summary-table", border=0)
-	detail_table = display[display["case_id"] != "FOLD_MACRO_AVERAGE"].to_html(
-		index=False, classes="score-table", border=0
+	summary = display[display["case"] == "FOLD_MACRO_AVERAGE"]
+	summary_table = summary.drop(columns="overlay").to_html(index=False, classes="score-table summary-table", border=0)
+	detail_table = display[display["case"] != "FOLD_MACRO_AVERAGE"].to_html(
+		index=False, classes="score-table", border=0, escape=False
 	)
 	title = escape(model_dir.name)
 	html = f"""<!doctype html>
