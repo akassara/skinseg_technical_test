@@ -18,6 +18,7 @@ COPY src/ ./src/
 COPY scripts/ ./scripts/
 
 RUN python -m pip install --upgrade pip \
+    && python -m pip install . \
     && python -m pip install ./nnUNet . \
     && chmod +x ./scripts/launch.sh
 
