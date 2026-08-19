@@ -1,0 +1,20 @@
+services:
+  skinseg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: skinseg-technical-test:latest
+    gpus: all
+    environment:
+      DATASET_ID: ${DATASET_ID:-1}
+      CONFIGURATION: ${CONFIGURATION:-2d}
+      FOLDS: ${FOLDS:-0 1 2}
+      NNUNET_NUM_SPLITS: ${NNUNET_NUM_SPLITS:-3}
+      TRAINER: ${TRAINER:-nnUNetTrainer_10epochs}
+      DEVICE: ${DEVICE:-cuda}
+      nnUNet_raw: /workspace/nnunet_data/nnunet_raw
+      nnUNet_preprocessed: /workspace/nnunet_data/nnunet_preprocessed
+      nnUNet_results: /workspace/nnunet_data/nnunet_results
+    volumes:
+      - ./data:/workspace/data:ro
+      - ./nnunet_data:/workspace/nnunet_data

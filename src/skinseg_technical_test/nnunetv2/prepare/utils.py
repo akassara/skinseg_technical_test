@@ -1,3 +1,4 @@
+import os
 import SimpleITK as sitk
 import numpy as np
 from skinseg_technical_test.nnunetv2.paths import nnUNet_raw, nnUNet_preprocessed, nnUNet_results
@@ -105,10 +106,13 @@ def make_out_dirs(dataset_id: int, task_name: str):
     
     labelsTr_dir = out_dir / "labelsTr"
     labelsTr_dir.mkdir(exist_ok=True)
+
+    labelsTs_dir = out_dir / "labelsTs"
+    labelsTs_dir.mkdir(exist_ok=True)
     
     preprocessed_dir = nnUNet_preprocessed / dataset_name
     preprocessed_dir.mkdir(parents=True, exist_ok=True)
-    return out_dir, imagesTr_dir, labelsTr_dir, imagesTs_dir, preprocessed_dir
+    return out_dir, imagesTr_dir, labelsTr_dir, imagesTs_dir, labelsTs_dir, preprocessed_dir
 
 def get_train_test_split(df: pd.DataFrame, test_size: float = 0.25, n_folds: int = 3, random_state: int = 3103):
     """
@@ -169,7 +173,7 @@ def get_train_test_split(df: pd.DataFrame, test_size: float = 0.25, n_folds: int
         print(f"Fold {fold_idx + 1}: {len(fold_dict['train'])} train, {len(fold_dict['val'])} val")
     return train_val_folds, test_ids, patient_metadata
 
-def get_patient_metadata(df: pd.DataFrame, masks_path: str = "/Users/amynkassara/Desktop/projects/skinseg_technical_test/data/masks"):
+def get_patient_metadata(df: pd.DataFrame, masks_path: str | None = None):
     """
     Extracts metadata for each patient from the DataFrame.
 
@@ -180,6 +184,15 @@ def get_patient_metadata(df: pd.DataFrame, masks_path: str = "/Users/amynkassara
     - A DataFrame containing metadata for each patient, region, and canonical region.
     """
     
+    if masks_path is None:
+        data_path = Path(
+            os.environ.get(
+                "SKINSEG_DATA_PATH",
+                Path(__file__).resolve().parents[4] / "data",
+            )
+        )
+        masks_path = data_path / "masks"
+
     # Replace NaN values in region column with 'Unknown'
     df = df.copy()
     df['region'] = df['region'].fillna('Unknown')
