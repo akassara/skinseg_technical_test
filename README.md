@@ -137,7 +137,11 @@ These results come from the four-fold `nnUNetTrainer_60epochs__nnUNetPlans__2d` 
 
 The model shows strong and stable JDE performance on the test set, while surface and corneous segmentation are substantially harder and show a clear validation-to-test gap. This suggests that the model learns the main layer geometry but remains sensitive to acquisition variability and thin or weakly contrasted boundaries. 
 
-Also, is there seems to be a problem with the chosen solution, the missing labels seems to have an impact on the training, which was supposed to be dealt with with the nnUNet "ignore" label. There is a bias towards producing incomplete masks.
+Also, is there seems to be a problem with the chosen solution, the missing labels seems to have an impact on the training, which was supposed to be dealt with with the nnUNet "ignore" label. There is a bias towards producing incomplete masks. 
+
+According to the training curves, 60 epochs don't seem to be enough. This could explain the noisy predictions.
+
+![Training curve for one fold](assets/progress.png)
 
 ### Qualitative predictions
 
