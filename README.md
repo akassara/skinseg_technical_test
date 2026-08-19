@@ -1,6 +1,6 @@
 # SkinSeg Technical Test
 
-An nnU-Net pipeline for segmenting retinal skin-layer structures in LC-OCT images. The project prepares the dataset, plans and preprocesses it with nnU-Net, trains cross-validation folds, predicts the test set, and generates a Dice scorecard with an HTML dashboard.
+An nnU-Net pipeline for segmenting skin-layer structures in LC-OCT images. The project prepares the dataset, plans and preprocesses it with nnU-Net, trains cross-validation folds, predicts the test set, and generates a Dice scorecard with an HTML dashboard.
 
 ## Dataset
 
